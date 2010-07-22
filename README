@@ -1,0 +1,31 @@
+===== My config files =====
+
+= usr-local-bin - my bin scripts
+	== 2ogg - decode all music files to .OGG
+	== autostart-transmission - start p2p client "Transmission"
+	== avi2mp4 - convert .AVI to .MP4
+	== awesome_start - progrmms needed to start with awesome
+	== blankpass - create blank password for /etc/shadow
+	== cgiwrap-fcgi.pl - FastCGI for nginx (don't work)
+	== chromium - parameters to start chromium web browser
+	== ftp - mount ftps with curlftpfs
+	== gajim-mpd - send tunes from mpd to Gajim
+	== KPD - energy conversion efficiency of my computer
+	== kq - little 2d game
+	== man2pdf - covert man pages to .PDF
+	== mod2avi - convert .MOD to .AVI
+	== mpd-update - update MPD's music DB
+	== passgen - generate passwords
+	== phone - mount my phone card
+	== plminify - create from PERL-code code with PERLgolf style
+	== run_once - start programm if it don't started yet
+	== sc - create screenshot and move it to dir
+	== simsu - sudoku
+	== tag2utf - encode tags in music files from cp1251 to utf-8
+	== transmission-cli - interface to Transmission client
+	== vangog - upload images to imagehosting vangog.bks-tv.ru
+	== winetricks - tricks for wine
+
+= awesome - configs of awesome WM
+	== light - light grey theme for awesome 3.4.3
+	== zen - modificated "zenburn" theme for awesome 3.4.6

@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# Установить тему курсора
+xsetroot -cursor_name Vanilla-DMZ-AA &
+
+# Простой миксер для ALSA, написанные на python
+volti &
+
+# Прозрачность окон
+xcompmgr &
+
+# Морда для MPD
+gmpc --start-hidden &
+
+# Включить NumLock
+numlockx on &
+
+# Авто-обновление базы MPD
+mpd-update &
+
+# Читалка новостей
+liferea &
+
+# Запуск Dropbox, если не запущен
+#if [ "`ps -A | grep dropbox`" ]; then
+    dropbox start & #;
+#fi
+
+# Ведение статистики
+wakoopa &
+
+# Делалка скриншотов на perl'е
+shutter --min_at_startup &

@@ -1,0 +1,7 @@
+#!/bin/bash
+if [[ -z "$1" ]] ; then
+	echo "Example: $0 12"
+else
+	let NUMBER=$1+1;
+	head -n 30 /dev/urandom | base64 | tail -n 2 | head -n 1 | tail -c $NUMBER
+fi

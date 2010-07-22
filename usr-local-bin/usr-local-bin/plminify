@@ -1,0 +1,93 @@
+#!/usr/bin/perl
+
+use Acme::Minify qw(minify);
+
+use warnings;
+use strict;
+
+=head1 NAME
+
+plminify - Perl code minifier
+
+=head1 VERSION
+
+Version 0.03
+
+=cut
+
+our $VERSION = '0.03';
+
+=head1 SYNOPSIS
+
+Minify Perl code from command line
+
+  plminify FILE [> OUTPUT]
+
+=cut
+
+my $err = "ERROR: Enter a valid file name.\n";
+
+die $err unless $ARGV[0];
+
+open(FILE, $ARGV[0]) or die $err;
+my $data = join('', <FILE>);
+close FILE;
+
+print minify($data)."\n";
+
+=head1 AUTHOR
+
+Alessandro Ghedini, C<< <alexbio at cpan.org> >>
+
+=head1 BUGS
+
+Please report any bugs or feature requests to C<bug-acme-minify at rt.cpan.org>, or through
+the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Acme-Minify>.  I will be notified, and then you'll
+automatically be notified of progress on your bug as I make changes.
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc plminify
+
+You can also look for information at:
+
+=over 4
+
+=item * GitHub
+
+L<http://github.com/AlexBio/Acme-Minify>
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Acme-Minify>
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/Acme-Minify>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Acme-Minify>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Acme-Minify/>
+
+=back
+
+
+=head1 ACKNOWLEDGEMENTS
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2010 Alessandro Ghedini.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
+
+=cut

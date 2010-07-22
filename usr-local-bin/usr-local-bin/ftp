@@ -1,0 +1,70 @@
+#!/bin/bash
+#####################################################################
+# if lsmod | grep fuse > /dev/null ; then :; else modprobe fuse; fi # Если fuse модулем раскоментировать
+#####################################################################
+###   Эту часть можно (и наверное нужно) подстраивать под себя. #####
+#####################################################################
+MOUNTDIR="/media/ftps"
+USERNAME="ftp"
+PASSWORD="132"
+
+FTP_MODE="rw"
+FTP_CP="cp1251"
+FTP_GID="100"
+FTP_UMASK="000"
+FTP_MISC="allow_other,ftp_method=singlecwd,kernel_cache,max_read=2,fsname=ftpfs,readdir_ino"
+
+#####################################################################
+MOUNTOPTS="${FTP_MODE},user=${USERNAME}:${PASSWORD},codepage=${FTP_CP},gid=${FTP_GID},umask=${FTP_UMASK},${FTP_MISC}"
+
+init()
+{
+    if mkdir -p ${MOUNTDIR}/$1 > /dev/null; then :; fi
+}
+
+unmounting()
+{
+    if umount ${MOUNTDIR}/$1 -fl > /dev/null; then :; fi
+}
+
+ftp_mount()
+{
+    echo Mounting $1 to $2 ...
+    
+    if ping $1 -c 1 -W 2 > /dev/null
+        then curlftpfs ftp://$1 $MOUNTDIR/$2 -s -o ${MOUNTOPTS}
+            return 0
+        else echo Server down
+            return 1
+    fi
+}
+
+case "$1" in
+    restart)
+	for i in ftp ftp2 ftp3 ftp4 ftp5
+	    do
+	    	unmounting $i
+	        init $i
+	    done
+	ftp_mount ftp.bks-tv.ru ftp
+	ftp_mount ftp2.bks-tv.ru ftp2
+	ftp_mount ftp3.bks-tv.ru ftp3
+	ftp_mount ftp4.bks-tv.ru ftp4
+	ftp_mount ftp5.bks-tv.ru ftp5
+	ftp_mount ftp6.bks-tv.ru ftp6
+	;;
+    stop)
+    	for i in ftp ftp2 ftp3 ftp4 ftp5 ftp6
+	    do
+		unmounting $i
+	    done
+	;;
+    start)
+    	ftp_mount ftp.bks-tv.ru ftp
+	ftp_mount ftp2.bks-tv.ru ftp2
+	ftp_mount ftp3.bks-tv.ru ftp3
+	ftp_mount ftp4.bks-tv.ru ftp4           
+	ftp_mount ftp5.bks-tv.ru ftp5
+	ftp_mount ftp6.bks-tv.ru ftp6
+    	;;
+esac

@@ -1,0 +1,117 @@
+#!/usr/bin/env perl
+use strict;
+use LWP::UserAgent;
+
+my $url = 'http://vangog.bks-tv.ru/';       # Слеш на конце обязательно!
+
+if ( $ARGV[0] eq undef ) {
+    &upload( &screen() );
+} elsif ( $ARGV[0] =~ /^(?:-h|--help)$/i ) {
+    &help();
+} elsif ( $ARGV[0] =~ /^(?:-b|--bbcode)$/i ) {
+    &bb( &giveImg() );
+} elsif ( $ARGV[0] =~ /^(?:-bf|--bb-full)$/i ) {
+    &bf( &giveImg() );
+} elsif ( $ARGV[0] =~ /^(?:-bt|--bb-thumb)$/i ) {
+    &bt( &giveImg() );
+} elsif ( $ARGV[0] =~ /^(?:-html|--html)$/i ) {
+    &html( &giveImg() );
+} elsif ( $ARGV[0] =~ /^(?:-hf|--html-full)$/i ) {
+    &hf( &giveImg() );
+} elsif ( $ARGV[0] =~ /^(?:-ht|--html-thumb)$/i ) {
+    &ht( &giveImg() );
+} elsif ( $ARGV[0] ne undef ) {
+    &giveImg();
+} else {
+    &help();
+}
+
+sub giveImg {
+    foreach ( @ARGV ) {
+        if ( /\w+(?:\.gif|\.png|\.jpe?g)$/i ) {
+            return &upload ( $_ );
+        } elsif ( /^(?:-b|--bbcode|-bf|--bb-full|-bt|--bb-thumb|-html|--html|-hf|--html-full|-ht|--html-thumb)$/i ) {
+        } else {
+            print "( $_ ) Неподдерживаемый формат файла\n";
+        }
+    }
+}
+
+sub screen {
+    chomp ( my $date = `date +%Y-%m-%d-%H%M%S` );
+    chomp ( my $home = `echo \${HOME}` );
+
+    open FILE, "scrot '$home/$date.png' -e 'echo \$f'|";
+    my ( $file ) = <FILE>; chomp $file;
+    close FILE;
+    
+    return $file;
+}
+
+sub upload {
+    my ( $image ) = @_;
+    my $ua = LWP::UserAgent->new;
+    my $res_url = $url.'api.upload.php';
+
+    my $response = $ua->post( $res_url,
+        Content_Type    => 'form-data',
+        Content         => [ file   => [ $image ]],
+    );
+    my @cont = split( /\n/, $response->content );
+    print "Full image: ".$url.$cont[0]."\n";
+    print "Thumbnail: ".$url.$cont[1]."\n";
+    return @cont;
+}
+
+sub bb {
+    my ( $full, $thumb ) = @_;
+    print "\nBB full: [url=".$url.'][img]'.$url.$full.'[/img][/url]'."\n";
+    print 'BB prev: [url='.$url.$full.'][img]'.$url.$thumb.'[/img][/url]'."\n";
+}
+
+sub bf {
+    my ( $full ) = @_;
+    print "\nBB full: [url=".$url.'][img]'.$url.$full.'[/img][/url]'."\n";
+}
+
+sub bt {
+    my ( $full, $thumb ) = @_;
+    print "\nBB prev: [url=".$url.$full.'][img]'.$url.$thumb.'[/img][/url]'."\n";
+}
+
+sub html {
+    my ( $full, $thumb ) = @_;
+    print "\nHTML full: <a href=\"".$url.'"><img src="'.$url.$full."\" /></a>\n";
+    print "HTML prev: <a href=\"".$url.$full.'"><img src="'.$url.$thumb."\" /></a>\n";
+}
+
+sub hf {
+    my ( $full, $thumb ) = @_;
+    print "\nHTML full: <a href=\"".$url.'"><img src="'.$url.$full."\" /></a>\n";
+}
+
+sub ht {
+    my ( $full, $thumb ) = @_;
+    print "\nHTML prev: <a href=\"".$url.$full.'"><img src="'.$url.$thumb."\" /></a>\n";
+}
+
+sub help {
+    print "Справка по пользованию скриптом.\n\n";
+    print "ИМЯ\n\n";
+    print "\tvangog - загрузка изображений на хостинг \"Vangog\"\n\n";
+    print "ОБЗОР\n\n";
+    print "\tvangog [опции] [файл...]\n\n";
+    print "ОПИСАНИЕ\n\n";
+    print "\tСкрипт для отправки изображений на хостинг изображений \"Vangog\".\n\tПринимаемые типы файлов: .gif, .jpeg, .jpg, .png.\n\n";
+    print "ФУНКЦИИ\n\n";
+    print "\t-h,  --help\t\tВывод этой справки.\n";
+    print "\t-b,  --bbcode\t\tВывести ссылки на изображения в bbcode тегах.\n";
+    print "\t-bf, --bb-full\t\tВывести ссылку на полное изображение в bbcode тегах.\n";
+    print "\t-bt, --bb-thumb\t\tВывести ссылку на превью изображения в bbcode тегах.\n";
+    print "\t     --html\t\tВывести ссылки на изображения в html тегах.\n";
+    print "\t-hf, --html-full\tВывести ссылку на полное изображение в html тегах.\n";
+    print "\t-ht, --html-thumb\tВывести ссылку на превью изображения в html тегах.\n\n";
+    print "\tДля создания скриншота скрипт вызывать без функций. (Позже будет добавлена\n\t\n\tвозможность получать ссылку на скриншот в bbcode). \n\n";
+    print "\tПри вызове скрипта с параметрами ( script 1.jpg 2.png ) он отправит изображения\n\tи вернет ссылки на загруженные сообщения.\n";
+    print "ВЕРСИЯ\n\n\t0.4-beta\n";
+}

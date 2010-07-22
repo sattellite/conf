@@ -1,0 +1,1 @@
+chromium-bin --user-agent="Mozilla/5.0 (X11; U; Linux x86_64; en-US) AppleWebKit/534.1 (KHTML, like Gecko) Chrome/6.0.439.0 Safari/Linux Gentoo" --new-wrench-menu --enable-apps --apps-panel --enable-sync-passwords

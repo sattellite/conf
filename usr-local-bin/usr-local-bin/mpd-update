@@ -1,0 +1,28 @@
+#!/bin/bash
+# Зависит от mpc(куда же без него) и inotify-tools
+
+# наш конфиг
+MPDCONF="/etc/mpd.conf" # в домашнеей папке
+
+# вычисляем каталог с музыкой
+MUSICDIR=`cat $MPDCONF | grep "[^#]*music_directory" |head -n1| awk '{print $2}'`
+# обрезаем кавычки
+MUSICDIR=${MUSICDIR:1:$((${#MUSICDIR}-2))}
+# а можно всё добро выше заменить на MUSICDIR="наша_папка_с_музыкой"
+# MUSICDIR="/home/sattellite/Music"
+
+# собственно сама функция обновления
+function mpcUpdate() {
+	#путь к файлу
+	file=$* 
+	# отрезаем папку с музыкой, оставляя путь в библиотеке
+	file=${file:$((${#MUSICDIR}+1))}
+	mpc update "$file" >/dev/null
+
+}
+
+# читаем в цикле события в папке с музыкой и производим нужное обновления базы
+inotifywait -mr -e close_write -e move -e create -e delete --format "%w%f" $MUSICDIR | while read line
+do
+	mpcUpdate "$line"
+done

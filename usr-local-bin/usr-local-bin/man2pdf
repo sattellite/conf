@@ -1,0 +1,6 @@
+#!/bin/sh
+if test -x /usr/bin/ps2pdf && test ! -z "$1"; then
+    man -t "$1" | ps2pdf - "$1".pdf
+    else
+	echo "ps2pdf not found or manpage not specified"
+fi

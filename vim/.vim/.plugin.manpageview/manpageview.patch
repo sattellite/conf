@@ -1,0 +1,39 @@
+--- manpageview.vim.orig	2006-01-20 21:36:44.000000000 +0200
++++ manpageview.vim	2006-01-23 22:34:54.000000000 +0200
+@@ -286,9 +286,9 @@
+    return
+   endif
+ 
+-  " when this buffer is exited it will be wiped out
++  " when this buffer is exited it will be hidden
+   if v:version >= 602
+-   setlocal bh=wipe
++   setlocal bh=hide
+   endif
+   let b:did_ftplugin= 2
+   let $COLUMNS=winwidth(0)
+@@ -403,17 +403,20 @@
+ 
+   if line("$") == 1 && col("$") == 1
+    " looks like there's no help for this topic
+-   q
++   bd
+ "   call Decho("***warning*** no manpage exists for <".manpagetopic."> book=".manpagebook)
+    echohl ErrorMsg
+    echo "***warning*** no manpage exists for <".manpagetopic.">"
+    echohl None
+-   sleep 2
++   sleep 1
++   if bufname("%")==""
++       q
++   endif
+   elseif manpagebook == ""
+-   exe 'file '.'Manpageview['.manpagetopic.']'
++   silent! exe 'file '.'Manpageview['.manpagetopic.']'
+ "   call Decho("setting filename<Manpageview[".manpagetopic.']>')
+   else
+-   exe 'file '.'Manpageview['.manpagetopic.'('.manpagebook.')]'
++   silent! exe 'file '.'Manpageview['.manpagetopic.'('.manpagebook.')]'
+ "   call Decho("setting filename<Manpageview[".manpagetopic.'('.manpagebook.')]>')
+   endif
+ 

@@ -1,0 +1,3 @@
+#!/bin/sh
+# вычисляет отношение потраченной энергии к энергии потраченной для выполнения задач
+CN=$(cat /proc/cpuinfo | grep processor | wc -l); UP=($(cat /proc/uptime)); echo "(${UP[0]}-${UP[1]}/$CN)/${UP[0]}" | bc -l

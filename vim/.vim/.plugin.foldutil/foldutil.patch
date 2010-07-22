@@ -1,0 +1,20 @@
+--- foldutil.vim.orig	2006-09-10 10:51:40.000000000 +0300
++++ foldutil.vim	2006-09-10 10:51:52.000000000 +0300
+@@ -421,7 +421,7 @@
+ endfunction " }}}
+ 
+ function! s:CreateFoldsInLoop() " {{{
+-  call SaveHardPosition('FoldUtil')
++  call genutils#SaveHardPosition('FoldUtil')
+   if g:foldutilClearFolds
+     " First eliminate all the existing folds.
+     normal zE
+@@ -495,7 +495,7 @@
+     endtry
+   endwhile
+   redraw | echo "Folds created: " . foldCount
+-  call RestoreHardPosition('FoldUtil')
++  call genutils#RestoreHardPosition('FoldUtil')
+ endfunction
+ 
+ function! s:CreateFold(st, en)

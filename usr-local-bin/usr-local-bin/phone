@@ -1,0 +1,9 @@
+#!/bin/sh
+case "$1" in
+    stop)
+    	gksu umount /media/PHONE\ CARD
+	;;
+    start)
+    	gksu mount /dev/sdg1 /media/PHONE\ CARD/
+    	;;
+esac

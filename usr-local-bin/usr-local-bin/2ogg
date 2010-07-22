@@ -1,0 +1,7 @@
+#!/bin/sh
+# Перекодирование любого музыкального файла в ogg
+
+FILE=$1
+OGG=$2
+
+gst-launch-0.10 filesrc location="$FILE" ! decodebin ! audioconvert ! audioresample ! vorbisenc ! oggmux ! filesink location="$OGG"

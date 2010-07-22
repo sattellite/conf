@@ -1,0 +1,19 @@
+--- feraltogglecommentify.vim_	2007-03-22 01:37:32.000000000 +0200
++++ feraltogglecommentify.vim	2007-03-22 01:38:17.000000000 +0200
+@@ -241,11 +241,11 @@
+ 		let commentSymbol_L = '!'
+ 		let commentSymbol_R = ''
+ 	else
+-		echohl WarningMsg
+-		echo "feraltogglecommentify.vim has not (yet) implemented for this file-type"
+-		echo "Your best bet is to specify the comment chars manually, i.e. :CC --"
+-		echo "Please feel free to email me with the comment char(s) and file type."
+-		echohl None
++"		echohl WarningMsg
++"		echo "feraltogglecommentify.vim has not (yet) implemented for this file-type"
++"		echo "Your best bet is to specify the comment chars manually, i.e. :CC --"
++"		echo "Please feel free to email me with the comment char(s) and file type."
++"		echohl None
+ 		let commentSymbol_L = '#'
+ 		let commentSymbol_R = ''
+ 	endif

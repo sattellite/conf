@@ -1,0 +1,21 @@
+--- icgiperl.vim.orig	2004-05-09 05:50:02.508693288 +0300
++++ icgiperl.vim	2004-05-09 05:50:31.648263400 +0300
+@@ -359,12 +359,12 @@
+ syn keyword icgiperlStatementSub	sub contained
+ 
+ syn match  icgiperlFunctionPrototype	"([^)]*)" contained
+-if exists("icgiperl_want_scope_in_variables")
+-   syn match  icgiperlFunctionPRef	"\h\w*::" contained
+-   syn match  icgiperlFunctionName	"\h\w*[^:]" contained
+-else
+-   syn match  icgiperlFunctionName	"\h[[:alnum:]_:]*" contained
+-endif
++" if exists("icgiperl_want_scope_in_variables")
++"    syn match  icgiperlFunctionPRef	"\h\w*::" contained
++"    syn match  icgiperlFunctionName	"\h\w*[^:]" contained
++" else
++"    syn match  icgiperlFunctionName	"\h[[:alnum:]_:]*" contained
++" endif
+ 
+ 
+ " All other # are comments, except ^#!

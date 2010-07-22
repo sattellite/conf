@@ -1,0 +1,33 @@
+#!/bin/sh
+# конвертирует avi-файлы в
+# mp4 для Nokia 5800
+# Нужно будет настроить через pv, чтобы показывало оставшееся время.
+#
+# исходный вариант:
+# mencoder INPUT.avi -ofps 15 -oac lavc -ovc lavc -lavcopts \
+# vglobal=1:aglobal=1:acodec=libfaac:abitrate=98:vcodec=mpeg4:level=31 \
+# -of lavf -lavfopts format=mp4 -vf scale=640:360 -o OUTPUT.mp4
+
+INPUT=$1
+OUTPUT=$2
+
+
+# Аудио-кодек
+ACODEC="acodec=libfaac"
+
+# Аудио битность
+ABITRATE="abitrate=98"
+
+# Видео-кодек
+VCODEC="vcodec=mpeg4"
+
+# Формат видео
+FORMAT="format=mp4"
+
+# Размер исходящей картинки
+SCALE="scale=640:360"
+
+LAVCOPTS="vglobal=1:aglobal=1:$ACODEC:$ABITRATE:$VCODEC:level=31"
+
+
+mencoder $INPUT -ofps 15 -oac lavc -ovc lavc -lavcopts $LAVCOPTS -of lavf -lavfopts $FORMAT -vf $SCALE -o $OUTPUT

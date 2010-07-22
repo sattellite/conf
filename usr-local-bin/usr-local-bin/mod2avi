@@ -1,0 +1,256 @@
+#!/bin/bash
+# mod2avi - converts video files from MOD format to AVI/MPG/other formats
+# This software is licensed under the GNU General Public License
+# For the full text of the GNU GPL, see: http://www.gnu.org/copyleft/gpl.html
+# No guarantees of any kind are associated with use of this software.
+# requirements: ffmpeg
+
+# Script settings (feel free to change these)
+ffmpegbin='/usr/bin/ffmpeg'      # Location of FFMpeg binary
+fileext='avi'                    # File extension to use for converted files (avi, mp4, flv, etc)
+vcodec='xvid'                    # Default value: video codec (xvid, mpeg4, flv, etc)
+vfps='29.97'                     # Default value: FPS (29.97)
+vsize='720x480'                  # Default value: frame size (720x480)
+videob='4500k'                   # Default value: video bitrate (4500k)
+acodec='mp3'                     # Default value: audio codec (mp3)
+audiob='192k'                    # Default value: audio bitrate (192k)
+audiof='48000'                   # Default value: audio frequency (48000)
+noaudio=0                        # Default value: enable/disable audio (0)
+mono=0                           # Default value: enable/disable stereo by default (0)
+deletefiles=0                    # Default value: enable/disable file deletion (0)
+quietmode=0                      # Default value: enable/disable quiet mode (0)
+
+# Variable initializations (do not change these)
+filecount=0                      # Counter for number of files processed
+version='v0.5b'                  # Script version number
+vdate='May 24th/2008'            # Script date
+profile='default'                # Storage for profile name only (not a setting)
+
+# Declare functions before the script begins
+
+help_about() 
+# This function displays the help/about screen
+{
+  echo "$(basename $0) $version $vdate"
+  echo
+  echo "Usage:  $(basename $0) [-options] files.."
+  echo "  Converts video files from MOD format to AVI/MPG/other formats."
+  echo "  -h (show help/about screen)"
+  echo "  -r [frame rate] (default 29.97)"
+  echo "  -s [frame size] (default 720x480)"
+  echo "  -v [video bitrate] (default 4500k)"
+  echo "  -a [audio bitrate] (default 192k)"
+  echo "  -f [audio frequency] (default 48000)"
+  echo "  -n (no audio in resulting file)"
+  echo "  -m (mono mode, default is stereo)"
+  echo "  -d (delete original MOD files)"
+  echo "  -q (quiet mode, suppress output)"
+  echo "  -o (only rename files to MPG, do not re-encode)"
+  echo "  -p [profile name] (highqual, youtube, email)"
+  echo "  files.mod (wildcards supported)"
+  echo 
+  echo "Profiles:"
+  echo "  highqual - 29.97fps, 720x480, 4500kbit video, 192kbit audio, 48khz, stereo"
+  echo "  youtube  - 25fps, 320x240, 2500kbit video, 128kbit audio, 44khz, stereo"
+  echo "  email    - 12fps, 256x224, 200kbit video, 64kbit audio, 22khz, mono"
+  echo
+  echo "Examples:"
+  echo "  Convert using defaults (makes high quality files):"
+  echo "    $ $(basename $0) *.mod"
+  echo "  Convert for posting on YouTube (medium quality files):"
+  echo "    $ $(basename $0) -p youtube mov014.mod mov015.mod"
+  echo "  Convert with custom encoding options:"
+  echo "    $ $(basename $0) -r 24 -s 640x480 -v 6500k -a 256k -f 44100 *.mod"
+  echo "  Rename to MPG only (do not convert):"
+  echo "    $ $(basename $0) -o *.mod"
+  exit 1
+} #help_about()
+
+mpegonly()
+# MPEG only function - if called it ignores the rest of the script and simply renames the MOD files to MPG
+{
+  if [ "$quietmode" -eq 0 ]; then
+    echo "$(basename $0) $version $vdate"         # Show script name, version and date
+    echo "[] $(date)"                             # Show current date
+    echo "[] Renaming files to .mpg instead of converting..."
+  fi
+
+  for file in "$@"; do                            # Begin loop
+    if [ ! -r "$file" ]; then                     # Can we read the MOD file?
+      if [ "$quietmode" -eq 0 ]; then             # If not, indicate the error if not in quiet mode
+        echo "[] Error: could not read file '$file'"
+      fi
+      continue                                    # Move on to next file
+    fi
+    mv "$file" "${file%.mod}.mpg"                 # Rename .mod file to .mpg
+    ((filecount++))                               # Increase file counter
+  done                                            # Proceed until done renaming all .mod files
+
+  if [ "$quietmode" -eq 0 ]; then
+    echo "[] Renamed $filecount files."           # Display done message
+  fi
+
+  exit 0                                          # Exit happily
+} #mpegonly()
+
+set_highqual()
+# Set high quality encoding options
+{
+  vfps='29.97'
+  vsize='720x480'
+  videob='4500k'
+  audiob='192k'
+  audiof='48000'
+  profile='High quality'
+} #set_highqual()
+
+set_youtube()
+# Set YouTube quality encoding options
+{
+  vfps='25'
+  vsize='320x240'
+  videob='2500k'
+  audiob='128k'
+  audiof='44100'
+  profile='YouTube'
+} #set_youtube()
+
+set_email()
+# Set E-mail quality encoding options
+{
+  vfps='12'
+  vsize='256x224'
+  videob='200k'
+  audiob='64k'
+  audiof='22050'
+  mono=1
+  profile='E-mail'
+} #set_email()
+
+ask_delete()
+# Ensure the user wants to delete his/her MOD files after encoding
+{
+  echo "[] WARNING: Your original MOD files will be deleted after encoding."
+  read -p "[] Are you sure you want these files deleted? (yes/no) [no] -> " UserChoice
+  case $UserChoice in                             # Only continue if y/yes were entered
+           [Yy]|[Yy]es) continue;;                # If Y/y or Yes/yes, continue
+           *)  echo "[] Operation aborted."       # Display aborted message
+               exit 0;;                           # Exit script
+  esac
+} #ask_delete()
+
+# Script begins here
+if [ -z "$1" ]; then                              # Was the command typed without any parameters?
+  help_about                                      # If so, display help/about screen and exit
+fi
+
+# Parse any options passed to the script
+while getopts "hr:s:v:a:f:nmdqop:" opt            # Get command-line options
+do                                                # Begin analysis loop
+        case $opt in                              # Analyze the option detected
+                q) quietmode=1;;                  # Enable quiet mode if selected
+                h) help_about;;                   # Display help/about screen
+                r) vfps="$OPTARG";;               # Set video fps
+                s) vsize="$OPTARG";;              # Set frame size
+                v) videob="$OPTARG";;             # Set video bitrate
+                a) audiob="$OPTARG";;             # Set audio bitrate
+                f) audiof="$OPTARG";;             # Set audio frequency
+                n) noaudio=1;;                    # Disable audio
+                m) mono=1;;                       # Disable stereo mode
+                d) deletefiles=1;;                # Enable file deletion
+                o) shift $(($OPTIND - 1))         # Shift off the options
+                   mpegonly "$@";;                # Rename files to MPG
+                p) {                              # Enable profile if specified
+                   case $OPTARG in                # Check which profile was specified
+                      "highqual") set_highqual;;  # High quality profile
+                      "youtube") set_youtube;;    # YouTube quality profile
+                      "email") set_email;;        # E-mail quality profile
+                      "e-mail") set_email;;       # In case someone uses a hyphen
+                      *) set_highqual;;           # Missing/invalid specification, use high quality
+                   esac                           # Done checking profiles
+                   };;                            # End of profile option code
+        esac                                      # Done analyzing options
+done                                              # End the analysis loop
+shift $(($OPTIND - 1))                            # Now we want to work with the files
+
+# Build FFMpeg options
+ffmpegopts="-vcodec $vcodec -r $vfps -s $vsize -b $videob -acodec $acodec -ab $audiob -ar $audiof -deinterlace"
+
+# Enable mono mode if specified
+if [ "$mono" -eq 1 ]; then
+  ffmpegopts="$ffmpegopts -ac 1"
+fi
+
+# Disable audio if specified
+if [ "$noaudio" -eq 1 ]; then
+  ffmpegopts="$ffmpegopts -an"
+fi
+
+# Display encoding settings if quiet mode is off
+if [ "$quietmode" -eq 0 ]; then
+  echo "$(basename $0) $version $vdate"           # Show script name, version and date
+  echo "[] $(date)"                               # Show current date
+  if [ "$profile" != "default" ]; then            # If we are using the non-default profile,
+    echo "[] Profile selected: $profile"          # Show the profile name
+  fi
+  echo "[] Frame rate: $vfps"                     # Show FPS
+  echo "[] Frame size: $vsize"                    # Show frame size
+  echo "[] Video bitrate: $videob"                # Show video bitrate
+  echo "[] Audio bitrate: $audiob"                # Show audio bitrate
+  echo "[] Audio frequency: $audiof"              # Show audio frequency
+  echo "[] Video codec: $vcodec"                  # Show video codec
+  if [ "$noaudio" -eq 0 ]; then                   # If audio is enabled,
+    echo "[] Audio codec: $acodec"                # Show audio codec
+  else
+    echo "[] Audio codec: disabled"               # Show codec disabled
+  fi
+  if [ "$mono" -eq 0 ]; then                      # Display stereo: yes/no
+    echo "[] Stereo: yes"
+  else
+    echo "[] Stereo: no"
+  fi
+fi                                                # Done listing settings if not in quiet mode
+
+# If the user specified to delete files, ensure they meant it
+if [ "$deletefiles" -eq 1 ]; then                 # If file deletion is enabled
+  ask_delete                                      # Make sure the user wants to delete their files
+fi
+
+# Begin the conversion operation
+for file in "$@"; do
+  if [ ! -r "$file" ]; then                       # Can we read the MOD file?
+     if [ "$quietmode" -eq 0 ]; then
+       echo "[] Error: could not read file '$file'"
+     fi
+     continue                                     # Move on to next file
+  fi
+
+  outfile="${file%.mod}.$fileext"                 # Set output filename based on MOD filename
+
+  if [ "$quietmode" -eq 0 ]; then                 # Are we in quiet mode?
+    echo "[] Converting $file..."                 # If not, display converting message
+    $ffmpegbin -i "$file" $ffmpegopts "$outfile"  # Issue the ffmpeg command to convert
+    echo "[] Done converting $file!"              # And display finished message
+  else                                            # Otherwise, issue ffpmeg command to convert
+    $ffmpegbin -i "$file" $ffmpegopts "$outfile" 2> /dev/null # And supress ffmpeg output
+  fi
+
+  if [ "$deletefiles" -eq 1 ]; then               # Should we delete files?
+    rm "$file"                                    # If so, delete this file
+    if [ "$quietmode" -eq 0 ]; then               # And log the deletion if not in quiet mode
+      echo "[] Deleted $file."
+    fi
+  fi
+
+  ((filecount++))                                 # Increase file counter
+done                                              # Continue converting until done
+
+# We're done!
+if [ "$quietmode" -eq 0 ]; then
+  echo "[] Number of files converted: $filecount" # Display number of files converted
+  echo
+fi
+
+exit 0                                            # Exit happily :)
+
+# EOF

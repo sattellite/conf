@@ -1,0 +1,31 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+use Crypt::PasswdMD5 qw(unix_md5_crypt); # sudo cpan -i Crypt::PasswdMD5
+my @salt = ( '.', '/', 0 .. 9, 'A' .. 'Z', 'a' .. 'z' );
+my %encrypted;
+
+sub genSalt {
+    my $count = shift;
+    my $salt = '';
+    $salt .= (@salt)[rand @salt] for 1..$count;
+    $salt;
+}
+
+
+sub get_encryptedpw {
+    my ($unencrypted) = @_;
+    $encrypted{des} = crypt($unencrypted, genSalt(2));
+    $encrypted{md5} = unix_md5_crypt($unencrypted, genSalt(8));
+    %encrypted;
+}
+
+print "Enter password string to encrypt (can be blank) : ";
+my $password = <STDIN>;
+chomp $password;
+
+get_encryptedpw($password);
+
+print qq{Plaintext password: "$password"\nDES Hash: $encrypted{des}\nMD5 Hash: $encrypted{md5}\nReplace the /etc/shadow password string with the above to force pass change\n};
+

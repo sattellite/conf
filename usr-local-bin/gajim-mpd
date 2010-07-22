@@ -1,0 +1,73 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+HOST = 'localhost'
+PORT = 6600
+
+import socket, time, dbus.service
+from dbus.mainloop.glib import DBusGMainLoop
+
+class mpdtune(dbus.service.Object):
+        def __init__(self):
+                dbus.service.Object.__init__(self, dbus.SessionBus(), '/Player')
+        @dbus.service.signal(dbus_interface = 'org.freedesktop.MediaPlayer')
+        def TrackChange(self, trackinfo):
+                print trackinfo
+
+def get_status(data):
+        for line in data.split('\n'):
+                if line.startswith('state:'):
+                        return line.replace('state: ', '', 1)
+
+def get_data(data):
+        artist = album = title = ''
+        for line in data.split('\n'):
+                if line.startswith('Artist:'):
+                        artist = line.replace('Artist: ', '', 1)
+                elif line.startswith('Album:'):
+                        album = line.replace('Album: ', '', 1)
+                elif line.startswith('Title: '):
+                        title = line.replace('Title: ', '', 1)
+                elif line.startswith('Name:'):
+                        artist = line.replace('Name: ', '', 1)
+                elif line.startswith('file: http'):
+                        album = line.replace('file: ', '', 1)
+                elif line.startswith('file: '):
+                        title = line.replace('file: ', '', 1).rpartition('/')[2]
+        return title, artist, album
+
+def set_status(title = '', artist = '', album = ''):
+        global lasttune
+        if lasttune == '%s - %s - %s' %(title, artist, album):
+                return
+        lasttune = '%s - %s - %s' %(title, artist, album)
+        tune.TrackChange(dbus.Dictionary({'title' : title, 'artist' : artist, 'album' : album}))
+
+dbus.SessionBus(mainloop = DBusGMainLoop())
+lasttune = ''
+tune = mpdtune()
+handle = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+handle.connect((HOST, PORT))
+handle.recv(1024)
+try:
+        while 1:
+                try:
+                        handle.send('status\n')
+                except :
+                        handle = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        handle.connect((HOST, PORT))
+                        handle.recv(1024)
+                        time.sleep(15)
+                        continue
+                if get_status(handle.recv(1024)) == 'play':
+                        handle.send('currentsong\n')
+                        data = get_data(handle.recv(1024))
+                        set_status(data[0], data[1], data[2])
+                else:
+                        set_status()
+                time.sleep(3)
+except KeyboardInterrupt:
+        set_status()
+        handle.send('close\n')
+        handle.close()
+
