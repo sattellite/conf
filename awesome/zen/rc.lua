@@ -339,7 +339,7 @@ globalkeys = awful.util.table.join(
     awful.key({ altkey }, "F1", function () scratch.drop("urxvt", "bottom") end),
 --    awful.key({ modkey }, "a", function () exec("urxvt -T Alpine -e alpine_exp") end),
 --    awful.key({ modkey }, "g", function () sexec("GTK2_RC_FILES=~/.gtkrc-gajim gajim") end),
-    awful.key({ modkey }, "q", function () exec("urxvt -e mcabber") end),
+    awful.key({ modkey }, "q", function () exec("gajim") end),
     -- }}}
 
     -- {{{ Multimedia keys
@@ -522,8 +522,8 @@ awful.rules.rules = {
     { rule = { instance = "firefox-bin" },
       properties = { floating = true }, callback = awful.titlebar.add  },
     { rule = { name  = "Alpine" },      properties = { tag = tags[1][4]} },
-    { rule = { class = "Gajim.py" },    properties = { tag = tags[1][5]} },
-    { rule = { class = "Akregator" },   properties = { tag = tags[1][8]} },
+    { rule = { class = "Gajim.py" },    properties = { tag = tags[1][2]} },
+    { rule = { name = "Chromium" },   properties = { tag = tags[1][1]} },
     { rule = { class = "Ark" },         properties = { floating = true } },
     { rule = { class = "Geeqie" },      properties = { floating = true } },
     { rule = { class = "ROX-Filer" },   properties = { floating = true } },
@@ -582,4 +582,8 @@ for s = 1, screen.count() do screen[s]:add_signal("arrange", function ()
   end)
 end
 -- }}}
+-- }}}
+
+-- {{{ Autostart programm
+awful.util.spawn_with_shell("awesome_start")
 -- }}}
