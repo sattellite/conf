@@ -1,0 +1,9 @@
+#!/bin/sh
+if [[ -z "$1" ]] ; then
+    echo "Try print \"md5hash <text to be encrypted>\""
+    echo "Example:"
+    echo "$   md5hash password"
+    echo "$   5f4dcc3b5aa765d61d8327deb882cf99 -"
+else
+    echo -n $1 | md5sum -
+fi
