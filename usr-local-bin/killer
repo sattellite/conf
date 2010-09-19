@@ -1,0 +1,3 @@
+#!/bin/sh
+prog=$1
+for pid in $(ps ax|grep $prog| awk '{print $1}'); do kill 9 $pid; done
